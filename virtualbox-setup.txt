@@ -1,0 +1,88 @@
+###installing virtualbox and biolinux vm
+
+#download and install virtualbox
+wget http://download.virtualbox.org/virtualbox/5.0.0/VirtualBox-5.0.0-101573-OSX.dmg
+hdiutil mount VirtualBox-5.0.0-101573-OSX.dmg
+sudo installer -package /Volumes/VirtualBox/VirtualBox.pkg -target "/Volumes/Macintosh HD"
+hdiutil unmount /Volumes/VirtualBox
+
+#download and install extension pack
+wget http://download.virtualbox.org/virtualbox/5.0.0/Oracle_VM_VirtualBox_Extension_Pack-5.0.0-101573.vbox-extpack
+vboxmanage extpack install Oracle_VM_VirtualBox_Extension_Pack-5.0.0-101573.vbox-extpack
+
+#download and import biolinux
+wget http://nebc.nerc.ac.uk/downloads/bio-linux-8-latest.ova 
+#tar xvf bio-linux-8-latest.ova
+#pico Bio-Linux-8.0.7.ovf
+#<StorageController name="SATA Controller" type="AHCI" PortCount="1" ==> <StorageController name="SATA Controller" type="AHCI" PortCount="2"
+#tar cvf bio-linux-8-rec.ova Bio-Linux-8.0.7.ovf packer-virtualbox-iso-1434544441-disk1.vmdk 
+
+##### getting started with virtualbox
+
+vboxmanage import "bio-linux-8-rec.ova" --dry-run
+vboxmanage import "bio-linux-8-rec.ova" --vsys 0 --cpus 8 --memory 112000
+
+#change name
+vboxmanage modifyvm Bio-Linux-8.0.7 --name BioLinux
+
+
+#add ssh port forwarding
+vboxmanage modifyvm BioLinux --natpf1 "ssh,tcp,,2222,,22"
+
+#add 126Gb virtual hard drive to use for swap
+##? vboxmanage modifyvm BioLinux --hdb "/Users/cryomics/VirtualBox VMs/BioLinux/BioLinux-hdd.vdi"
+#vboxmanage storagectl BioLinux --name "SATA Controller" --add sata --controller IntelAhci --remove
+#vboxmanage storagectl BioLinux --name "SATA Controller" --add sata --controller IntelAhci --portcount 2
+
+vboxmanage createhd --filename "/Users/cryomics/VirtualBox VMs/BioLinux/BioLinux-hdd.vdi" --size 122070
+#vboxmanage createhd --filename "/Users/cryomics/VirtualBox VMs/BioLinux/BioLinux-swap.vdi" --size 122070
+
+vboxmanage storageattach BioLinux --storagectl "SATA Controller" --device 0 --port 1 --type hdd --medium "/Users/cryomics/VirtualBox VMs/BioLinux/BioLinux-hdd.vdi"
+
+#add a shared work folder
+vboxmanage sharedfolder add BioLinux --name "work-rec3141" --hostpath /work/rec3141
+
+
+#start up the vm
+vboxmanage startvm BioLinux --type headless
+
+#ssh into the vm
+ssh -l manager -p 2222 localhost
+
+#mount the shared folder from inside the vm
+sudo mkdir -p /work/rec3141
+sudo mount -t vboxsf -o uid=$UID,gid=$(id -g) work-rec3141 /work/rec3141
+
+#partition the 2nd hdd and format the scratch drive
+sudo fdisk /dev/sdb # n ; p ; ; ; w
+sudo mkfs -t ext3 /dev/sdb1
+sudo mkdir -p /scratch
+sudo mount /dev/sdb1 /scratch
+
+#add swap to virtualbox /scratch
+size="100G" && file_swap=/scratch/swapfile_$size.img && sudo touch $file_swap
+sudo dd if=/dev/zero of=$file_swap bs=1G count=100
+sudo chmod 600 $file_swap
+sudo mkswap $file_swap
+sudo swapon -p 20 $file_swap
+
+#edit fstab
+#sudo pico /etc/fstab
+#"/swapfile      file     262140      0       10
+#/swapfile_100G.img     none    swap    sw,pri=20      0       0"
+
+sudo swapon  -s
+
+#soft shutdown the vm
+vboxmanage controlvm BioLinux poweroff soft
+
+vboxmanage 
+----
+
+
+
+#install kraken from source
+wget https://github.com/DerrickWood/kraken/archive/master.zip
+unzip master.zip
+cd kraken-master
+sudo ./install_kraken.sh /usr/local/bin
