@@ -40,7 +40,8 @@ vboxmanage createhd --filename "/Users/cryomics/VirtualBox VMs/BioLinux/BioLinux
 vboxmanage storageattach BioLinux --storagectl "SATA Controller" --device 0 --port 1 --type hdd --medium "/Users/cryomics/VirtualBox VMs/BioLinux/BioLinux-hdd.vdi"
 
 #add a shared work folder
-vboxmanage sharedfolder add BioLinux --name "work-rec3141" --hostpath /work/rec3141
+vboxmanage sharedfolder add BioLinux --name "work" --hostpath /work
+
 
 
 #start up the vm
@@ -50,8 +51,8 @@ vboxmanage startvm BioLinux --type headless
 ssh -l manager -p 2222 localhost
 
 #mount the shared folder from inside the vm
-sudo mkdir -p /work/rec3141
-sudo mount -t vboxsf -o uid=$UID,gid=$(id -g) work-rec3141 /work/rec3141
+sudo mkdir -p /work
+sudo mount -t vboxsf -o uid=$UID,gid=$(id -g) work /work/
 
 #partition the 2nd hdd and format the scratch drive
 sudo fdisk /dev/sdb # n ; p ; ; ; w
