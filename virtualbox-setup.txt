@@ -41,7 +41,7 @@ vboxmanage storageattach BioLinux --storagectl "SATA Controller" --device 0 --po
 
 #add a shared work folder
 vboxmanage sharedfolder add BioLinux --name "work" --hostpath /work
-
+vboxmanage sharedfolder add BioLinux --name "scratch" --hostpath /scratch
 
 
 #start up the vm
@@ -50,18 +50,20 @@ vboxmanage startvm BioLinux --type headless
 #ssh into the vm
 ssh -l manager -p 2222 localhost
 
-#mount the shared folder from inside the vm
+#mount the shared folders from inside the vm
 sudo mkdir -p /work
 sudo mount -t vboxsf -o uid=$UID,gid=$(id -g) work /work/
+sudo mkdir -p /scratch
+sudo mount -t vboxsf -o uid=$UID,gid=$(id -g) scratch /scratch/
 
 #partition the 2nd hdd and format the scratch drive
 sudo fdisk /dev/sdb # n ; p ; ; ; w
 sudo mkfs -t ext3 /dev/sdb1
-sudo mkdir -p /scratch
-sudo mount /dev/sdb1 /scratch
+sudo mkdir -p /swap
+sudo mount /dev/sdb1 /swap
 
-#add swap to virtualbox /scratch
-size="100G" && file_swap=/scratch/swapfile_$size.img && sudo touch $file_swap
+#add swap to virtualbox /swap
+size="100G" && file_swap=/swap/swapfile_$size.img && sudo touch $file_swap
 sudo dd if=/dev/zero of=$file_swap bs=1G count=100
 sudo chmod 600 $file_swap
 sudo mkswap $file_swap
