@@ -1,5 +1,5 @@
-# this is the recipe for installing the MDS software of Seung Hee Bee 
-# (http://homes.cs.washington.edu/~shbae/software.html) on BioLinux (Ubuntu)
+# This is a recipe for installing the MDS software of Seung Hee Bee on BioLinux (Ubuntu)
+# (http://homes.cs.washington.edu/~shbae/software.html) 
 #
 # HP-MDS: parallel MDS
 # DA-MDS: Deterministic Annealing MDS
@@ -18,10 +18,10 @@ sudo apt-get update
 
 sudo apt-get install mono-complete
 
-
 # compile MPI.NET
 # https://github.com/jmp75/MPI.NET
 
+sudo apt-get install git
 sudo apt-get install libopenmpi-dev openmpi-bin openmpi-doc
 sudo apt-get install libtool automake autoconf autogen build-essential
 
@@ -42,7 +42,7 @@ make
 
 sudo make install
 
-sudo ldconfig 
+sudo ldconfig
 
 # compile MI-MDS
 
@@ -58,6 +58,7 @@ cp $INSTALLDIR/mpi.net/MPI/MPI.dll.config ./
 cp bin/Debug/Ccr.Core.dll ./
 
 mcs /reference:MPI.dll /reference:Ccr.Core.dll Program.cs FileIO.cs
+mv Program.exe mimds
 
 #[USAGE]: >mpiexec -n [#Proc] hybrid_MIMDS.exe [sampleMappingFile] [sampleDataFile] [outOfSampleDataFile] [labelFile("NoLabelFile")] [outputFile] [threshold] [origDim] [targetDim] [#NN] [numSample] [#thread] [ignore1?] [ignore2?] [stress?]
 
@@ -98,6 +99,7 @@ mv Program.exe hpmds
 # [USAGE]: >mpiexec -n [pNum] MPI_SMACOF_bMat.exe [distMatFile] [initMappedFile("NoMappedFile")] [labelFile("NoLabelFile")] [outputFile] [threshold] [targetDim] [#Points=N] [nRow] [nCol] [blockSize] [reduce-flag] [random-flag]
 
 
+exit 0
 
 ############### detailed usage info
 # MI-MDS
