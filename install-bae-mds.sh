@@ -42,6 +42,8 @@ sudo apt-get install libopenmpi-dev openmpi-bin openmpi-doc
 sudo apt-get install libtool automake autoconf autogen build-essential
 
 # This version from github incorporates the 3 patches that are floating around
+# http://www.osl.iu.edu/MailArchives/mpi.net/2011/05/0157.php
+# https://sources.gentoo.org/cgi-bin/viewvc.cgi/gentoo-x86/sys-cluster/mpi-dotnet/files/?hideattic=0
 
 mkdir $INSTALLDIR
 cd $INSTALLDIR
@@ -75,6 +77,7 @@ sudo ldconfig
 
 
 ### THERE ARE SOME BUGFIXES NEEDED TO COMPILE THESE AND RUN THEM
+### CHECK FOR PATCHES AT github.com/rec3141/mds-mountain/damds/
 
 # compile MI-MDS
 
