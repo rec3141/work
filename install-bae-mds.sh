@@ -1,10 +1,11 @@
 # This is a recipe for installing the Scalable MDS software of Seung Hee Bee, Judy Qiu, and Geoffrey Fox on BioLinux (Ubuntu)
 # I tried but failed to get it working under MacOSX
-# (http://homes.cs.washington.edu/~shbae/software.html) 
+# http://homes.cs.washington.edu/~shbae/software.html
+# http://salsahpc.indiana.edu/smds/
 #
 # HP-MDS: parallel MDS
-# DA-MDS: Deterministic Annealing MDS
-# MI-MDS: Majorization Interpolation MDS
+# DA-MDS: Deterministic Annealing MDS (incorporate HP-MDS)
+# MI-MDS: Majorization Interpolation MDS (incorporates both of)
 
 # with help from http://blog.biophysengr.net/2011/11/compiling-mpinet-under-ubuntu-oneiric.html
 
@@ -13,8 +14,14 @@ INSTALLDIR=~/baemds
 # install Mono development tools
 # http://www.mono-project.com/docs/getting-started/install/linux/
 
+
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-echo "deb http://download.mono-project.com/repo/debian wheezy main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
+#for latest version
+#echo "deb http://download.mono-project.com/repo/debian wheezy main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
+
+#for mono 3 -- it worked for me using this, not sure if necessary
+echo "deb http://download.mono-project.com/repo/debian wheezy/snapshots/3.12.0 main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
+
 sudo apt-get update
 
 #do NOT install mono-gmcs
@@ -34,6 +41,8 @@ sudo apt-get install libopenmpi-dev openmpi-bin openmpi-doc
 
 sudo apt-get install libtool automake autoconf autogen build-essential
 
+# This version from github incorporates the 3 patches that are floating around
+
 mkdir $INSTALLDIR
 cd $INSTALLDIR
 git clone https://github.com/jmp75/MPI.NET.git mpi.net
@@ -44,19 +53,28 @@ cd mpi.net
 
 sed -i 's/ilasm2/ilasm/;s/gmcs/mcs/;' configure configure.ac
 
+#to avoid compile warning below
+sed -i 's/public void Dispose/new public void Dispose/' MPI/Intercommunicator.cs
+#./Intercommunicator.cs(116,21): warning CS0108: `MPI.Intercommunicator.Dispose()' hides inherited member `MPI.Communicator.Dispose()'. Use the new keyword if hiding was intended
+#./Communicator.cs(222,21): (Location of the symbol related to previous warning)
+#Compilation succeeded - 1 warning(s)
+
+#I don't think this is necessary for OpenMPI but if you try to compile with other libraries you may need to fix this:
+sed -i '#/usr/include/mpi.h/#/usr/include/mpi/mpi.h#' MPI/Unsafe.pl
+
 LOCAL_DIR=/usr/local
 sh autogen.sh
 ./configure --prefix=$LOCAL_DIR
 make
 
-#./Intercommunicator.cs(116,21): warning CS0108: `MPI.Intercommunicator.Dispose()' hides inherited member `MPI.Communicator.Dispose()'. Use the new keyword if hiding was intended
-#./Communicator.cs(222,21): (Location of the symbol related to previous warning)
-#Compilation succeeded - 1 warning(s)
-
 sudo make install
 # MPI.dll MPI.dll.config MPIUtils.dll installed into /usr/local/lib/
 
 sudo ldconfig
+
+
+
+### THERE ARE SOME BUGFIXES NEEDED TO COMPILE THESE AND RUN THEM
 
 # compile MI-MDS
 
