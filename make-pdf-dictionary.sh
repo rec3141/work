@@ -16,7 +16,7 @@ for FILE1 in *.filter.txt; do
   for FILE2 in *.filter.txt; do 
     if [ "$FILE1" < "$FILE2" ]; then 
       comm -12 $FILE1 $FILE2 | sort >> comps.txt; 
-      uniq comps.txt > compsu.txt; 
+      comm -12 $FILE1 $FILE2 | sort -u >> compsu.txt; 
     fi; 
   done; 
 done
@@ -27,7 +27,7 @@ awk '{if($1 > 10) print $2,$1}' comps2.txt | sort > dictionary-bywords.txt
 
 #if the word is present in more than 3 papers
 sort compsu.txt | uniq -c | sort -rn > comps2u.txt
-awk '{if($1 > 3) print $2,$1}' comps2u.txt | sort > dictionary2-bydocs.txt
+awk '{if($1 > 3) print $2,$1}' comps2u.txt | sort > dictionary-bydocs.txt
 
 mkdir compare_out
 mv comp*.txt compare_out/
