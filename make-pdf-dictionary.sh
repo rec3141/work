@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # this program takes a directory full of PDFs and makes a dictionary of the most frequently used words
+# the dictionary is suitable for input to wordle or worditout word clouds
 
 # requires calibre's ebook-convert
 # sudo apt-get install calibre
@@ -23,11 +24,11 @@ done
 
 #if the word is used more than 10 times among all papers
 sort comps.txt | uniq -c | sort -rn > comps2.txt
-awk '{if($1 > 10) print $2,$1}' comps2.txt | sort > dictionary-bywords.txt
+awk 'BEGIN{OFS=":";} {if($1 > 10) print $2,$1}' comps2.txt | sort > dictionary-bywords.txt
 
 #if the word is present in more than 3 papers
 sort compsu.txt | uniq -c | sort -rn > comps2u.txt
-awk '{if($1 > 3) print $2,$1}' comps2u.txt | sort > dictionary-bydocs.txt
+awk 'BEGIN{OFS=":";} {if($1 > 3) print $2,$1}' comps2u.txt | sort > dictionary-bydocs.txt
 
 mkdir compare_out
 mv comp*.txt compare_out/
